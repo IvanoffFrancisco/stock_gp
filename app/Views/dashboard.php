@@ -19,6 +19,7 @@
 </nav>
 
 <div class="container py-5">
+
     <?php if (session()->getFlashdata('error')): ?>
         <div class="alert alert-danger">
             <?= session()->getFlashdata('error') ?>
@@ -27,20 +28,29 @@
 
     <div class="card border-0 shadow rounded-4">
         <div class="card-body p-4">
+
             <h1 class="h3 mb-3">Bienvenido, <?= esc(session('nombre')) ?></h1>
-            <p class="text-muted mb-0">Has iniciado sesión correctamente.</p>
+
+            <p class="text-muted mb-0">
+                Has iniciado sesión correctamente.
+            </p>
+
             <p class="mt-2">
-                Tu rol actual es: <strong><?= esc(session('rol')) ?></strong>
+                Tu rol actual es:
+                <strong><?= esc(session('rol')) ?></strong>
             </p>
 
             <div class="row g-3 mt-3">
+
+                <!-- ================= ADMIN ================= -->
                 <?php if (session('rol') === 'admin'): ?>
+
                     <div class="col-md-4">
                         <div class="card border-danger h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Usuarios</h5>
                                 <p class="card-text text-muted">
-                                    Gestiona usuarios, permisos y accesos del sistema.
+                                    Gestiona usuarios y permisos del sistema.
                                 </p>
                                 <a href="<?= base_url('usuarios') ?>" class="btn btn-danger">
                                     Ir a usuarios
@@ -54,7 +64,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Categorías</h5>
                                 <p class="card-text text-muted">
-                                    Administra categorías de productos para perro y gato.
+                                    Administra categorías de productos.
                                 </p>
                                 <a href="<?= base_url('categorias') ?>" class="btn btn-primary">
                                     Ir a categorías
@@ -68,7 +78,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Productos</h5>
                                 <p class="card-text text-muted">
-                                    Administra productos, pesos, stock inicial y pallets.
+                                    Administra productos y stock.
                                 </p>
                                 <a href="<?= base_url('productos') ?>" class="btn btn-success">
                                     Ir a productos
@@ -82,7 +92,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Precios</h5>
                                 <p class="card-text text-muted">
-                                    Administra precios por cantidad de bolsas para cada producto.
+                                    Configura precios por cantidad.
                                 </p>
                                 <a href="<?= base_url('precio-productos') ?>" class="btn btn-warning">
                                     Ir a precios
@@ -94,9 +104,9 @@
                     <div class="col-md-4">
                         <div class="card border-info h-100">
                             <div class="card-body">
-                                <h5 class="card-title">Movimientos de stock</h5>
+                                <h5 class="card-title">Movimientos</h5>
                                 <p class="card-text text-muted">
-                                    Registra ingresos, egresos y ajustes de stock con historial.
+                                    Control de ingresos y egresos de stock.
                                 </p>
                                 <a href="<?= base_url('movimientos-stock') ?>" class="btn btn-info text-white">
                                     Ir a movimientos
@@ -110,7 +120,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">Clientes</h5>
                                 <p class="card-text text-muted">
-                                    Administra y consulta los clientes del sistema.
+                                    Administración de clientes.
                                 </p>
                                 <a href="<?= base_url('clientes') ?>" class="btn btn-dark">
                                     Ir a clientes
@@ -118,15 +128,33 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 🔥 NUEVO: PEDIDOS ADMIN -->
+                    <div class="col-md-4">
+                        <div class="card border-secondary h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Pedidos</h5>
+                                <p class="card-text text-muted">
+                                    Consulta y administra los pedidos de todos los vendedores.
+                                </p>
+                                <a href="<?= base_url('pedidos') ?>" class="btn btn-secondary">
+                                    Ir a pedidos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 <?php endif; ?>
 
+                <!-- ================= VENDEDOR ================= -->
                 <?php if (session('rol') === 'vendedor'): ?>
+
                     <div class="col-md-4">
                         <div class="card border-success h-100">
                             <div class="card-body">
                                 <h5 class="card-title">Clientes</h5>
                                 <p class="card-text text-muted">
-                                    Consulta y registra clientes para generar pedidos.
+                                    Consulta y registra clientes.
                                 </p>
                                 <a href="<?= base_url('clientes') ?>" class="btn btn-success">
                                     Ir a clientes
@@ -134,23 +162,44 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- 🔥 NUEVO: PEDIDOS VENDEDOR -->
+                    <div class="col-md-4">
+                        <div class="card border-primary h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Pedidos</h5>
+                                <p class="card-text text-muted">
+                                    Carga y gestiona tus pedidos.
+                                </p>
+                                <a href="<?= base_url('pedidos') ?>" class="btn btn-primary">
+                                    Ir a pedidos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 <?php endif; ?>
 
+                <!-- ================= CONSULTOR ================= -->
                 <?php if (session('rol') === 'consultor'): ?>
+
                     <div class="col-md-4">
                         <div class="card border-secondary h-100">
                             <div class="card-body">
-                                <h5 class="card-title">Panel de consultor</h5>
+                                <h5 class="card-title">Consultas</h5>
                                 <p class="card-text text-muted">
-                                    Aquí podrás consultar productos, stock y reportes.
+                                    Consulta productos, stock y reportes.
                                 </p>
                             </div>
                         </div>
                     </div>
+
                 <?php endif; ?>
+
             </div>
         </div>
     </div>
+
 </div>
 
 </body>

@@ -51,3 +51,12 @@ $routes->group('clientes', ['filter' => 'adminvendedor'], function($routes) {
     $routes->get('create', 'Clientes::create');
     $routes->post('store', 'Clientes::store');
 });
+
+$routes->group('pedidos', ['filter' => 'adminvendedor'], function($routes) {
+    $routes->get('/', 'Pedidos::index');
+    $routes->get('create', 'Pedidos::create');
+    $routes->post('store', 'Pedidos::store');
+    $routes->get('edit/(:num)', 'Pedidos::edit/$1');
+    $routes->post('update/(:num)', 'Pedidos::update/$1');
+    $routes->post('cambiar-estado/(:num)', 'Pedidos::cambiarEstado/$1');
+});
