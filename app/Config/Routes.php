@@ -33,3 +33,21 @@ $routes->group('productos', ['filter' => 'admin'], function($routes) {
     $routes->get('create', 'Productos::create');
     $routes->post('store', 'Productos::store');
 });
+
+$routes->group('precio-productos', ['filter' => 'admin'], function($routes) {
+    $routes->get('/', 'PrecioProductos::index');
+    $routes->get('create', 'PrecioProductos::create');
+    $routes->post('store', 'PrecioProductos::store');
+});
+
+$routes->group('movimientos-stock', ['filter' => 'admin'], function($routes) {
+    $routes->get('/', 'MovimientosStock::index');
+    $routes->get('create', 'MovimientosStock::create');
+    $routes->post('store', 'MovimientosStock::store');
+});
+
+$routes->group('clientes', ['filter' => 'adminvendedor'], function($routes) {
+    $routes->get('/', 'Clientes::index');
+    $routes->get('create', 'Clientes::create');
+    $routes->post('store', 'Clientes::store');
+});

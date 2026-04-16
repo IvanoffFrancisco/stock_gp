@@ -76,16 +76,61 @@
                             </div>
                         </div>
                     </div>
+
+                    <div class="col-md-4">
+                        <div class="card border-warning h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Precios</h5>
+                                <p class="card-text text-muted">
+                                    Administra precios por cantidad de bolsas para cada producto.
+                                </p>
+                                <a href="<?= base_url('precio-productos') ?>" class="btn btn-warning">
+                                    Ir a precios
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card border-info h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Movimientos de stock</h5>
+                                <p class="card-text text-muted">
+                                    Registra ingresos, egresos y ajustes de stock con historial.
+                                </p>
+                                <a href="<?= base_url('movimientos-stock') ?>" class="btn btn-info text-white">
+                                    Ir a movimientos
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="card border-dark h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Clientes</h5>
+                                <p class="card-text text-muted">
+                                    Administra y consulta los clientes del sistema.
+                                </p>
+                                <a href="<?= base_url('clientes') ?>" class="btn btn-dark">
+                                    Ir a clientes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 <?php endif; ?>
 
                 <?php if (session('rol') === 'vendedor'): ?>
                     <div class="col-md-4">
                         <div class="card border-success h-100">
                             <div class="card-body">
-                                <h5 class="card-title">Panel de vendedor</h5>
+                                <h5 class="card-title">Clientes</h5>
                                 <p class="card-text text-muted">
-                                    Aquí podrás registrar ventas y consultar stock.
+                                    Consulta y registra clientes para generar pedidos.
                                 </p>
+                                <a href="<?= base_url('clientes') ?>" class="btn btn-success">
+                                    Ir a clientes
+                                </a>
                             </div>
                         </div>
                     </div>
