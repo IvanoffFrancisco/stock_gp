@@ -26,6 +26,12 @@
         </div>
     <?php endif; ?>
 
+    <?php if (session()->getFlashdata('success')): ?>
+        <div class="alert alert-success">
+            <?= session()->getFlashdata('success') ?>
+        </div>
+    <?php endif; ?>
+
     <div class="card border-0 shadow rounded-4">
         <div class="card-body p-4">
 
@@ -42,7 +48,6 @@
 
             <div class="row g-3 mt-3">
 
-                <!-- ================= ADMIN ================= -->
                 <?php if (session('rol') === 'admin'): ?>
 
                     <div class="col-md-4">
@@ -129,7 +134,6 @@
                         </div>
                     </div>
 
-                    <!-- 🔥 NUEVO: PEDIDOS ADMIN -->
                     <div class="col-md-4">
                         <div class="card border-secondary h-100">
                             <div class="card-body">
@@ -144,9 +148,22 @@
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <div class="card border-light-subtle h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Ventas</h5>
+                                <p class="card-text text-muted">
+                                    Consulta las ventas generadas a partir de pedidos entregados.
+                                </p>
+                                <a href="<?= base_url('ventas') ?>" class="btn btn-secondary">
+                                    Ir a ventas
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 <?php endif; ?>
 
-                <!-- ================= VENDEDOR ================= -->
                 <?php if (session('rol') === 'vendedor'): ?>
 
                     <div class="col-md-4">
@@ -163,7 +180,6 @@
                         </div>
                     </div>
 
-                    <!-- 🔥 NUEVO: PEDIDOS VENDEDOR -->
                     <div class="col-md-4">
                         <div class="card border-primary h-100">
                             <div class="card-body">
@@ -178,9 +194,22 @@
                         </div>
                     </div>
 
+                    <div class="col-md-4">
+                        <div class="card border-success h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">Ventas</h5>
+                                <p class="card-text text-muted">
+                                    Consulta tus ventas generadas desde pedidos entregados.
+                                </p>
+                                <a href="<?= base_url('ventas') ?>" class="btn btn-success">
+                                    Ir a ventas
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
                 <?php endif; ?>
 
-                <!-- ================= CONSULTOR ================= -->
                 <?php if (session('rol') === 'consultor'): ?>
 
                     <div class="col-md-4">

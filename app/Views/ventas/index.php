@@ -19,18 +19,21 @@
 </nav>
 
 <div class="container py-5">
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-1">Ventas</h1>
             <p class="text-muted mb-0">
                 <?php if (session('rol') === 'admin'): ?>
-                    Visualización de todas las ventas generadas
+                    Visualización de todas las ventas del sistema
                 <?php else: ?>
                     Visualización de tus ventas generadas
                 <?php endif; ?>
             </p>
         </div>
-        <a href="<?= base_url('dashboard') ?>" class="btn btn-outline-secondary">Volver</a>
+        <a href="<?= base_url('dashboard') ?>" class="btn btn-outline-secondary">
+            Volver
+        </a>
     </div>
 
     <?php if (session()->getFlashdata('success')): ?>
@@ -52,15 +55,16 @@
                     <thead class="table-dark">
                         <tr>
                             <th class="px-4 py-3">ID</th>
-                            <th class="py-3">Pedido origen</th>
                             <th class="py-3">Cliente</th>
                             <th class="py-3">Vendedor</th>
                             <th class="py-3">Fecha venta</th>
                             <th class="py-3">Fecha entrega</th>
                             <th class="py-3">Forma de pago</th>
+                            <th class="py-3">Estado entrega</th>
                             <th class="py-3">Subtotal</th>
                             <th class="py-3">Descuento</th>
                             <th class="py-3">Total</th>
+                            <th class="py-3">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,20 +72,38 @@
                             <?php foreach ($ventas as $venta): ?>
                                 <tr>
                                     <td class="px-4"><?= esc($venta['id']) ?></td>
-                                    <td>#<?= esc($venta['pedido_id'] ?? '-') ?></td>
                                     <td><?= esc($venta['cliente_nombre']) ?></td>
                                     <td><?= esc($venta['vendedor_nombre']) ?></td>
                                     <td><?= esc($venta['fecha_venta'] ?: '-') ?></td>
                                     <td><?= esc($venta['fecha_entrega'] ?: '-') ?></td>
                                     <td><?= esc($venta['forma_pago'] ?: '-') ?></td>
+                                    <td>
+                                        <?php
+                                            $estado = $venta['estado_entrega'];
+                                            $badgeClass = match ($estado) {
+                                                'entregado' => 'bg-success',
+                                                default => 'bg-secondary',
+                                            };
+                                        ?>
+                                        <span class="badge <?= $badgeClass ?>">
+                                            <?= esc(ucfirst($estado)) ?>
+                                        </span>
+                                    </td>
                                     <td>$ <?= number_format((float) $venta['subtotal'], 2, ',', '.') ?></td>
                                     <td>$ <?= number_format((float) $venta['descuento'], 2, ',', '.') ?></td>
                                     <td>$ <?= number_format((float) $venta['total'], 2, ',', '.') ?></td>
+                                    <td>
+                                        <a href="<?= base_url('ventas/show/' . $venta['id']) ?>" class="btn btn-sm btn-outline-dark">
+                                            Ver
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="10" class="text-center py-4">No hay ventas registradas.</td>
+                                <td colspan="11" class="text-center py-4">
+                                    No hay ventas registradas.
+                                </td>
                             </tr>
                         <?php endif; ?>
                     </tbody>
@@ -89,6 +111,7 @@
             </div>
         </div>
     </div>
+
 </div>
 
 </body>

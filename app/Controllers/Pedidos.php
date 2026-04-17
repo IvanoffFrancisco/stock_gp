@@ -282,6 +282,16 @@ class Pedidos extends BaseController
             return redirect()->to('/pedidos')->with('error', 'El pedido ya fue entregado y no puede cambiarse.');
         }
 
+        if ($nuevoEstado === 'entregado') {
+            $resultado = $this->generarVentaDesdePedido((int) $id);
+
+            if (!$resultado['ok']) {
+                return redirect()->to('/pedidos')->with('error', $resultado['error']);
+            }
+
+            return redirect()->to('/pedidos')->with('success', 'Pedido entregado, venta generada y stock descontado correctamente.');
+        }
+
         $pedidoModel->update($id, [
             'estado' => $nuevoEstado,
         ]);
@@ -347,6 +357,138 @@ class Pedidos extends BaseController
         ];
     }
 
+    private function generarVentaDesdePedido(int $pedidoId): array
+    {
+        $pedidoModel          = new PedidoModel();
+        $pedidoDetalleModel   = new PedidoDetalleModel();
+        $ventaModel           = new \App\Models\VentaModel();
+        $ventaDetalleModel    = new \App\Models\VentaDetalleModel();
+        $productoModel        = new ProductoModel();
+        $movimientoStockModel = new \App\Models\MovimientoStockModel();
+
+        $pedido = $pedidoModel->find($pedidoId);
+
+        if (!$pedido) {
+            return [
+                'ok' => false,
+                'error' => 'El pedido no existe.'
+            ];
+        }
+
+        $ventaExistente = $ventaModel->where('pedido_id', $pedidoId)->first();
+
+        if ($ventaExistente) {
+            return [
+                'ok' => false,
+                'error' => 'Este pedido ya generó una venta anteriormente.'
+            ];
+        }
+
+        $detalles = $pedidoDetalleModel->where('pedido_id', $pedidoId)->findAll();
+
+        if (empty($detalles)) {
+            return [
+                'ok' => false,
+                'error' => 'El pedido no tiene detalle para generar la venta.'
+            ];
+        }
+
+        foreach ($detalles as $detalle) {
+            $producto = $productoModel->find($detalle['producto_id']);
+
+            if (!$producto) {
+                return [
+                    'ok' => false,
+                    'error' => 'Uno de los productos del pedido ya no existe.'
+                ];
+            }
+
+            $cantidad = (int) $detalle['cantidad'];
+            $bonificado = (int) $detalle['bonificado'];
+
+            if ($bonificado === 1) {
+                continue;
+            }
+
+            if ((int) $producto['stock_unidades'] < $cantidad) {
+                return [
+                    'ok' => false,
+                    'error' => 'No hay stock suficiente para entregar el producto: ' . $producto['nombre']
+                ];
+            }
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        $ventaModel->insert([
+            'pedido_id'       => $pedido['id'],
+            'cliente_id'      => $pedido['cliente_id'],
+            'usuario_id'      => $pedido['usuario_id'],
+            'fecha_venta'     => date('Y-m-d'),
+            'fecha_entrega'   => $pedido['fecha_entrega'],
+            'forma_pago'      => $pedido['forma_pago'],
+            'estado_entrega'  => 'entregado',
+            'subtotal'        => $pedido['subtotal'],
+            'descuento'       => $pedido['descuento'],
+            'total'           => $pedido['total'],
+            'observacion'     => $pedido['observacion'],
+            'created_at'      => date('Y-m-d H:i:s'),
+        ]);
+
+        $ventaId = $ventaModel->getInsertID();
+
+        foreach ($detalles as $detalle) {
+            $ventaDetalleModel->insert([
+                'venta_id'          => $ventaId,
+                'producto_id'       => $detalle['producto_id'],
+                'cantidad'          => $detalle['cantidad'],
+                'precio_unitario'   => $detalle['precio_unitario'],
+                'subtotal'          => $detalle['subtotal'],
+                'bonificado'        => $detalle['bonificado'],
+                'descripcion_extra' => $detalle['descripcion_extra'],
+            ]);
+
+            $producto = $productoModel->find($detalle['producto_id']);
+            $cantidad = (int) $detalle['cantidad'];
+
+            if ((int) $detalle['bonificado'] !== 1) {
+                $nuevoStock = (int) $producto['stock_unidades'] - $cantidad;
+
+                $productoModel->update($detalle['producto_id'], [
+                    'stock_unidades' => $nuevoStock,
+                ]);
+
+                $movimientoStockModel->insert([
+                    'producto_id'     => $detalle['producto_id'],
+                    'usuario_id'      => session('id_usuario'),
+                    'tipo_movimiento' => 'egreso',
+                    'cantidad'        => $cantidad,
+                    'motivo'          => 'Venta generada desde pedido #' . $pedido['id'],
+                    'observacion'     => 'Venta #' . $ventaId,
+                    'created_at'      => date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
+
+        $pedidoModel->update($pedidoId, [
+            'estado' => 'entregado',
+        ]);
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return [
+                'ok' => false,
+                'error' => 'Ocurrió un error al generar la venta.'
+            ];
+        }
+
+        return [
+            'ok' => true
+        ];
+    }
+
     private function buscarPrecioPorCantidad(PrecioProductoModel $precioProductoModel, int $productoId, int $cantidad): float
     {
         $precios = $precioProductoModel
@@ -365,4 +507,36 @@ class Pedidos extends BaseController
 
         return 0;
     }
+    public function show($id = null)
+{
+    $pedidoModel = new PedidoModel();
+    $pedidoDetalleModel = new PedidoDetalleModel();
+
+    $pedido = $pedidoModel
+        ->select('pedidos.*, clientes.nombre AS cliente_nombre, clientes.telefono, clientes.direccion, clientes.localidad, usuarios.nombre AS vendedor_nombre')
+        ->join('clientes', 'clientes.id = pedidos.cliente_id')
+        ->join('usuarios', 'usuarios.id = pedidos.usuario_id')
+        ->where('pedidos.id', $id)
+        ->first();
+
+    if (!$pedido) {
+        return redirect()->to('/pedidos')->with('error', 'El pedido no existe.');
+    }
+
+    if (session('rol') === 'vendedor' && (int) $pedido['usuario_id'] !== (int) session('id_usuario')) {
+        return redirect()->to('/pedidos')->with('error', 'No tienes permisos para ver este pedido.');
+    }
+
+    $detalles = $pedidoDetalleModel
+        ->select('pedido_detalles.*, productos.nombre AS producto_nombre, productos.kilogramos, categorias.nombre AS categoria_nombre')
+        ->join('productos', 'productos.id = pedido_detalles.producto_id')
+        ->join('categorias', 'categorias.id = productos.categoria_id')
+        ->where('pedido_detalles.pedido_id', $id)
+        ->findAll();
+
+    return view('pedidos/show', [
+        'pedido'   => $pedido,
+        'detalles' => $detalles,
+    ]);
+}
 }

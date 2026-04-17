@@ -56,7 +56,13 @@ $routes->group('pedidos', ['filter' => 'adminvendedor'], function($routes) {
     $routes->get('/', 'Pedidos::index');
     $routes->get('create', 'Pedidos::create');
     $routes->post('store', 'Pedidos::store');
+    $routes->get('show/(:num)', 'Pedidos::show/$1');
     $routes->get('edit/(:num)', 'Pedidos::edit/$1');
     $routes->post('update/(:num)', 'Pedidos::update/$1');
     $routes->post('cambiar-estado/(:num)', 'Pedidos::cambiarEstado/$1');
+});
+
+$routes->group('ventas', ['filter' => 'adminvendedor'], function($routes) {
+    $routes->get('/', 'Ventas::index');
+    $routes->get('show/(:num)', 'Ventas::show/$1');
 });

@@ -95,6 +95,10 @@
                                     <td>$ <?= number_format((float) $pedido['total'], 2, ',', '.') ?></td>
                                     <td>
                                         <div class="d-flex flex-column gap-2">
+                                            <a href="<?= base_url('pedidos/show/' . $pedido['id']) ?>" class="btn btn-sm btn-outline-dark">
+                                                Ver
+                                            </a>
+
                                             <?php if ($pedido['estado'] !== 'entregado'): ?>
                                                 <a href="<?= base_url('pedidos/edit/' . $pedido['id']) ?>" class="btn btn-sm btn-outline-primary">
                                                     Editar
