@@ -36,6 +36,59 @@
         </a>
     </div>
 
+    <div class="card border-0 shadow rounded-4 mb-4">
+        <div class="card-body">
+            <form method="get" action="<?= base_url('ventas') ?>">
+                <div class="row g-3">
+                    <div class="col-md-2">
+                        <label class="form-label">Fecha desde</label>
+                        <input type="date" name="fecha_desde" class="form-control" value="<?= esc($filtros['fecha_desde'] ?? '') ?>">
+                    </div>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Fecha hasta</label>
+                        <input type="date" name="fecha_hasta" class="form-control" value="<?= esc($filtros['fecha_hasta'] ?? '') ?>">
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Cliente</label>
+                        <input type="text" name="cliente" class="form-control" placeholder="Buscar por cliente" value="<?= esc($filtros['cliente'] ?? '') ?>">
+                    </div>
+
+                    <?php if (session('rol') === 'admin'): ?>
+                        <div class="col-md-2">
+                            <label class="form-label">Vendedor</label>
+                            <select name="vendedor" class="form-select">
+                                <option value="">Todos</option>
+                                <?php foreach ($vendedores as $vend): ?>
+                                    <option value="<?= esc($vend['id']) ?>" <?= (($filtros['vendedor'] ?? '') == $vend['id']) ? 'selected' : '' ?>>
+                                        <?= esc($vend['nombre']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    <?php endif; ?>
+
+                    <div class="col-md-2">
+                        <label class="form-label">Estado</label>
+                        <select name="estado" class="form-select">
+                            <option value="">Todos</option>
+                            <option value="entregado" <?= (($filtros['estado'] ?? '') === 'entregado') ? 'selected' : '' ?>>Entregado</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-1 d-flex align-items-end">
+                        <button type="submit" class="btn btn-dark w-100">Filtrar</button>
+                    </div>
+
+                    <div class="col-md-12">
+                        <a href="<?= base_url('ventas') ?>" class="btn btn-outline-secondary btn-sm">Limpiar filtros</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <?php if (session()->getFlashdata('success')): ?>
         <div class="alert alert-success">
             <?= session()->getFlashdata('success') ?>

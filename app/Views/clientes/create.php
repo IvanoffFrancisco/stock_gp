@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nuevo cliente - Sistema Stock</title>
+    <title><?= ($modo === 'editar') ? 'Editar cliente' : 'Nuevo cliente' ?> - Sistema Stock</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body class="bg-body-secondary">
@@ -25,8 +25,12 @@
                 <div class="card-body p-4 p-md-5">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <div>
-                            <h2 class="fw-bold mb-1">Nuevo cliente</h2>
-                            <p class="text-muted mb-0">Registrar un cliente para futuros pedidos</p>
+                            <h2 class="fw-bold mb-1">
+                                <?= ($modo === 'editar') ? 'Editar cliente' : 'Nuevo cliente' ?>
+                            </h2>
+                            <p class="text-muted mb-0">
+                                <?= ($modo === 'editar') ? 'Modificar datos del cliente seleccionado' : 'Registrar un cliente para futuros pedidos' ?>
+                            </p>
                         </div>
                         <a href="<?= base_url('clientes') ?>" class="btn btn-outline-secondary">Volver</a>
                     </div>
@@ -42,7 +46,14 @@
                         </div>
                     <?php endif; ?>
 
-                    <form action="<?= base_url('clientes/store') ?>" method="post">
+                    <?php
+                        $esEditar = ($modo === 'editar' && !empty($cliente));
+                        $action = $esEditar
+                            ? base_url('clientes/update/' . $cliente['id'])
+                            : base_url('clientes/store');
+                    ?>
+
+                    <form action="<?= $action ?>" method="post">
                         <?= csrf_field() ?>
 
                         <div class="mb-3">
@@ -52,7 +63,7 @@
                                 class="form-control"
                                 id="nombre"
                                 name="nombre"
-                                value="<?= old('nombre') ?>"
+                                value="<?= old('nombre', $cliente['nombre'] ?? '') ?>"
                                 placeholder="Ej: Juan Pérez / Pet Shop Central"
                                 required
                             >
@@ -65,7 +76,7 @@
                                 class="form-control"
                                 id="telefono"
                                 name="telefono"
-                                value="<?= old('telefono') ?>"
+                                value="<?= old('telefono', $cliente['telefono'] ?? '') ?>"
                                 placeholder="Ej: 3624-123456"
                             >
                         </div>
@@ -77,7 +88,7 @@
                                 class="form-control"
                                 id="direccion"
                                 name="direccion"
-                                value="<?= old('direccion') ?>"
+                                value="<?= old('direccion', $cliente['direccion'] ?? '') ?>"
                                 placeholder="Ej: Av. Principal 123"
                             >
                         </div>
@@ -89,7 +100,7 @@
                                 class="form-control"
                                 id="localidad"
                                 name="localidad"
-                                value="<?= old('localidad') ?>"
+                                value="<?= old('localidad', $cliente['localidad'] ?? '') ?>"
                                 placeholder="Ej: Resistencia"
                             >
                         </div>
@@ -102,11 +113,11 @@
                                 name="observacion"
                                 rows="4"
                                 placeholder="Datos adicionales del cliente"
-                            ><?= old('observacion') ?></textarea>
+                            ><?= old('observacion', $cliente['observacion'] ?? '') ?></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 py-2">
-                            Guardar cliente
+                            <?= $esEditar ? 'Actualizar cliente' : 'Guardar cliente' ?>
                         </button>
                     </form>
                 </div>

@@ -55,6 +55,7 @@
                             <th class="py-3">Localidad</th>
                             <th class="py-3">Observación</th>
                             <th class="py-3">Fecha alta</th>
+                            <th class="py-3 text-center">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -68,11 +69,16 @@
                                     <td><?= esc($cliente['localidad'] ?: '-') ?></td>
                                     <td><?= esc($cliente['observacion'] ?: '-') ?></td>
                                     <td><?= esc($cliente['created_at']) ?></td>
+                                    <td class="text-center">
+                                        <a href="<?= base_url('clientes/edit/' . $cliente['id']) ?>" class="btn btn-warning btn-sm">
+                                            Editar
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="7" class="text-center py-4">
+                                <td colspan="8" class="text-center py-4">
                                     No hay clientes registrados.
                                 </td>
                             </tr>

@@ -27,6 +27,11 @@
         </div>
         <div class="d-flex gap-2">
             <a href="<?= base_url('pedidos') ?>" class="btn btn-outline-secondary">Volver</a>
+
+            <a href="<?= base_url('pedidos/pdf/' . $pedido['id']) ?>" target="_blank" class="btn btn-danger">
+                PDF
+            </a>
+
             <?php if ($pedido['estado'] !== 'entregado'): ?>
                 <a href="<?= base_url('pedidos/edit/' . $pedido['id']) ?>" class="btn btn-primary">Editar</a>
             <?php endif; ?>
@@ -40,13 +45,13 @@
                     <h5 class="mb-3">Datos generales</h5>
 
                     <p class="mb-2"><strong>Cliente:</strong> <?= esc($pedido['cliente_nombre']) ?></p>
-                    <p class="mb-2"><strong>Teléfono:</strong> <?= esc($pedido['telefono'] ?: '-') ?></p>
-                    <p class="mb-2"><strong>Dirección:</strong> <?= esc($pedido['direccion'] ?: '-') ?></p>
-                    <p class="mb-2"><strong>Localidad:</strong> <?= esc($pedido['localidad'] ?: '-') ?></p>
+                    <p class="mb-2"><strong>Teléfono:</strong> <?= esc($pedido['telefono'] ?? '-') ?></p>
+                    <p class="mb-2"><strong>Dirección:</strong> <?= esc($pedido['direccion'] ?? '-') ?></p>
+                    <p class="mb-2"><strong>Localidad:</strong> <?= esc($pedido['localidad'] ?? '-') ?></p>
                     <p class="mb-2"><strong>Vendedor:</strong> <?= esc($pedido['vendedor_nombre']) ?></p>
-                    <p class="mb-2"><strong>Fecha pedido:</strong> <?= esc($pedido['fecha_pedido'] ?: '-') ?></p>
-                    <p class="mb-2"><strong>Fecha entrega:</strong> <?= esc($pedido['fecha_entrega'] ?: '-') ?></p>
-                    <p class="mb-2"><strong>Forma de pago:</strong> <?= esc($pedido['forma_pago'] ?: '-') ?></p>
+                    <p class="mb-2"><strong>Fecha pedido:</strong> <?= esc($pedido['fecha_pedido'] ?? '-') ?></p>
+                    <p class="mb-2"><strong>Fecha entrega:</strong> <?= esc($pedido['fecha_entrega'] ?? '-') ?></p>
+                    <p class="mb-2"><strong>Forma de pago:</strong> <?= esc($pedido['forma_pago'] ?? '-') ?></p>
 
                     <p class="mb-2">
                         <strong>Estado:</strong>
@@ -61,16 +66,16 @@
                         <span class="badge <?= $badgeClass ?>"><?= esc(ucfirst($estado)) ?></span>
                     </p>
 
-                    <p class="mb-2"><strong>Observación:</strong> <?= esc($pedido['observacion'] ?: '-') ?></p>
+                    <p class="mb-2"><strong>Observación:</strong> <?= esc($pedido['observacion'] ?? '-') ?></p>
                 </div>
             </div>
 
             <div class="card border-0 shadow rounded-4 mt-4">
                 <div class="card-body">
                     <h5 class="mb-3">Resumen económico</h5>
-                    <p class="mb-2"><strong>Subtotal:</strong> $ <?= number_format((float) $pedido['subtotal'], 2, ',', '.') ?></p>
-                    <p class="mb-2"><strong>Descuento:</strong> $ <?= number_format((float) $pedido['descuento'], 2, ',', '.') ?></p>
-                    <p class="mb-0"><strong>Total:</strong> $ <?= number_format((float) $pedido['total'], 2, ',', '.') ?></p>
+                    <p class="mb-2"><strong>Subtotal:</strong> $ <?= number_format((float) ($pedido['subtotal'] ?? 0), 2, ',', '.') ?></p>
+                    <p class="mb-2"><strong>Descuento:</strong> $ <?= number_format((float) ($pedido['descuento'] ?? 0), 2, ',', '.') ?></p>
+                    <p class="mb-0"><strong>Total:</strong> $ <?= number_format((float) ($pedido['total'] ?? 0), 2, ',', '.') ?></p>
                 </div>
             </div>
         </div>
@@ -97,15 +102,19 @@
                             <tbody>
                                 <?php foreach ($detalles as $detalle): ?>
                                     <tr>
-                                        <td class="px-4"><?= esc($detalle['producto_nombre']) ?></td>
-                                        <td><?= esc($detalle['categoria_nombre']) ?></td>
-                                        <td><?= esc($detalle['kilogramos']) ?></td>
-                                        <td><?= esc($detalle['cantidad']) ?></td>
-                                        <td>$ <?= number_format((float) $detalle['precio_unitario'], 2, ',', '.') ?></td>
+                                        <td class="px-4"><?= esc($detalle['producto_nombre'] ?? '-') ?></td>
+                                        <td><?= esc($detalle['categoria_nombre'] ?? '-') ?></td>
+                                        <td><?= esc($detalle['kilogramos'] ?? '-') ?></td>
+                                        <td><?= esc($detalle['cantidad'] ?? 0) ?></td>
+                                        <td>$ <?= number_format((float) ($detalle['precio_unitario'] ?? 0), 2, ',', '.') ?></td>
                                         <td>
-                                            <?= (int) $detalle['bonificado'] === 1 ? '<span class="badge bg-success">Sí</span>' : '<span class="badge bg-secondary">No</span>' ?>
+                                            <?php if ((int) ($detalle['bonificado'] ?? 0) === 1): ?>
+                                                <span class="badge bg-success">Sí</span>
+                                            <?php else: ?>
+                                                <span class="badge bg-secondary">No</span>
+                                            <?php endif; ?>
                                         </td>
-                                        <td>$ <?= number_format((float) $detalle['subtotal'], 2, ',', '.') ?></td>
+                                        <td>$ <?= number_format((float) ($detalle['subtotal'] ?? 0), 2, ',', '.') ?></td>
                                     </tr>
                                 <?php endforeach; ?>
 

@@ -7,31 +7,79 @@ use App\Models\PedidoDetalleModel;
 use App\Models\ClienteModel;
 use App\Models\ProductoModel;
 use App\Models\PrecioProductoModel;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class Pedidos extends BaseController
 {
     public function index()
-    {
-        $pedidoModel = new PedidoModel();
-        $rol = session('rol');
-        $usuarioId = session('id_usuario');
+{
+    $pedidoModel = new PedidoModel();
+    $rol = session('rol');
+    $usuarioId = session('id_usuario');
 
-        $builder = $pedidoModel
-            ->select('pedidos.*, clientes.nombre AS cliente_nombre, usuarios.nombre AS vendedor_nombre')
-            ->join('clientes', 'clientes.id = pedidos.cliente_id')
-            ->join('usuarios', 'usuarios.id = pedidos.usuario_id')
-            ->orderBy('pedidos.id', 'DESC');
+    $fechaDesde = $this->request->getGet('fecha_desde');
+    $fechaHasta = $this->request->getGet('fecha_hasta');
+    $cliente    = trim((string) $this->request->getGet('cliente'));
+    $vendedor   = $this->request->getGet('vendedor');
+    $estado     = $this->request->getGet('estado');
 
-        if ($rol === 'vendedor') {
-            $builder->where('pedidos.usuario_id', $usuarioId);
-        }
+    $builder = $pedidoModel
+        ->select('pedidos.*, clientes.nombre AS cliente_nombre, usuarios.nombre AS vendedor_nombre')
+        ->join('clientes', 'clientes.id = pedidos.cliente_id')
+        ->join('usuarios', 'usuarios.id = pedidos.usuario_id');
 
-        $pedidos = $builder->findAll();
-
-        return view('pedidos/index', [
-            'pedidos' => $pedidos,
-        ]);
+    if ($rol === 'vendedor') {
+        $builder->where('pedidos.usuario_id', $usuarioId);
     }
+
+    if (!empty($fechaDesde)) {
+        $builder->where('pedidos.fecha_pedido >=', $fechaDesde);
+    }
+
+    if (!empty($fechaHasta)) {
+        $builder->where('pedidos.fecha_pedido <=', $fechaHasta);
+    }
+
+    if (!empty($cliente)) {
+        $builder->like('clientes.nombre', $cliente);
+    }
+
+    if ($rol === 'admin' && !empty($vendedor)) {
+        $builder->where('pedidos.usuario_id', $vendedor);
+    }
+
+    if (!empty($estado)) {
+        $builder->where('pedidos.estado', $estado);
+    }
+
+    $pedidos = $builder
+        ->orderBy('pedidos.id', 'DESC')
+        ->findAll();
+
+    $vendedores = [];
+    if ($rol === 'admin') {
+        $db = \Config\Database::connect();
+        $vendedores = $db->table('usuarios')
+            ->select('id, nombre')
+            ->where('rol', 'vendedor')
+            ->orderBy('nombre', 'ASC')
+            ->get()
+            ->getResultArray();
+    }
+
+    return view('pedidos/index', [
+        'pedidos'     => $pedidos,
+        'vendedores'  => $vendedores,
+        'filtros'     => [
+            'fecha_desde' => $fechaDesde,
+            'fecha_hasta' => $fechaHasta,
+            'cliente'     => $cliente,
+            'vendedor'    => $vendedor,
+            'estado'      => $estado,
+        ],
+    ]);
+}
 
     public function create()
     {
@@ -539,4 +587,89 @@ class Pedidos extends BaseController
         'detalles' => $detalles,
     ]);
 }
+public function pdf($id = null)
+{
+    $pedidoModel = new PedidoModel();
+    $pedidoDetalleModel = new PedidoDetalleModel();
+
+    $pedido = $pedidoModel
+        ->select('pedidos.*, clientes.nombre AS cliente_nombre, clientes.telefono, clientes.direccion, clientes.localidad, usuarios.nombre AS vendedor_nombre')
+        ->join('clientes', 'clientes.id = pedidos.cliente_id')
+        ->join('usuarios', 'usuarios.id = pedidos.usuario_id')
+        ->where('pedidos.id', $id)
+        ->first();
+
+    if (!$pedido) {
+        return redirect()->to('/pedidos')->with('error', 'El pedido no existe.');
+    }
+
+    if (session('rol') === 'vendedor' && (int) $pedido['usuario_id'] !== (int) session('id_usuario')) {
+        return redirect()->to('/pedidos')->with('error', 'No tienes permisos para ver este pedido.');
+    }
+
+    $detalles = $pedidoDetalleModel
+        ->select('pedido_detalles.*, productos.nombre AS producto_nombre, productos.kilogramos, categorias.nombre AS categoria_nombre')
+        ->join('productos', 'productos.id = pedido_detalles.producto_id')
+        ->join('categorias', 'categorias.id = productos.categoria_id')
+        ->where('pedido_detalles.pedido_id', $id)
+        ->findAll();
+
+    $options = new Options();
+    $options->set('isRemoteEnabled', true);
+    $dompdf = new Dompdf($options);
+
+    $html = view('pdf/remito', [
+        'tituloDocumento' => 'REMITO / PEDIDO',
+        'numeroDocumento' => str_pad((string) $pedido['id'], 6, '0', STR_PAD_LEFT),
+        'fechaDocumento'  => $pedido['fecha_pedido'] ?? date('Y-m-d'),
+        'fechaEntrega'    => $pedido['fecha_entrega'] ?? '-',
+        'formaPago'       => $pedido['forma_pago'] ?? '-',
+        'estado'          => ucfirst($pedido['estado'] ?? '-'),
+        'vendedorNombre'  => $pedido['vendedor_nombre'] ?? '-',
+        'cliente' => [
+            'nombre'    => $pedido['cliente_nombre'] ?? '-',
+            'telefono'  => $pedido['telefono'] ?? '-',
+            'direccion' => $pedido['direccion'] ?? '-',
+            'localidad' => $pedido['localidad'] ?? '-',
+        ],
+        'detalles'  => $detalles,
+        'subtotal'  => $pedido['subtotal'] ?? 0,
+        'descuento' => $pedido['descuento'] ?? 0,
+        'total'     => $pedido['total'] ?? 0,
+        'empresa'   => [
+            'nombre'    => 'GP',
+            'direccion' => 'Tu dirección',
+            'cuit'      => 'Tu CUIT',
+            'telefono'  => 'Tu teléfono',
+            'email'     => 'Tu email',
+        ],
+        'logoPath' => $this->obtenerLogoPdf(),
+    ]);
+
+    $dompdf->loadHtml($html);
+    $dompdf->setPaper('A4', 'portrait');
+    $dompdf->render();
+
+    return $this->response
+        ->setHeader('Content-Type', 'application/pdf')
+        ->setBody($dompdf->output());
+}
+
+    private function obtenerLogoPdf(): string
+    {
+        $rutaLogo = FCPATH . 'img/logo-gp.png';
+
+        if (!is_file($rutaLogo)) {
+            return '';
+        }
+
+        $contenido = @file_get_contents($rutaLogo);
+
+        if ($contenido === false) {
+            return 'file://' . str_replace('\\', '/', realpath($rutaLogo) ?: $rutaLogo);
+        }
+
+        return 'data:image/png;base64,' . base64_encode($contenido);
+    }
+
 }

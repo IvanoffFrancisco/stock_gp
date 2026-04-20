@@ -50,6 +50,8 @@ $routes->group('clientes', ['filter' => 'adminvendedor'], function($routes) {
     $routes->get('/', 'Clientes::index');
     $routes->get('create', 'Clientes::create');
     $routes->post('store', 'Clientes::store');
+    $routes->get('edit/(:num)', 'Clientes::edit/$1');
+    $routes->post('update/(:num)', 'Clientes::update/$1');
 });
 
 $routes->group('pedidos', ['filter' => 'adminvendedor'], function($routes) {
@@ -60,9 +62,11 @@ $routes->group('pedidos', ['filter' => 'adminvendedor'], function($routes) {
     $routes->get('edit/(:num)', 'Pedidos::edit/$1');
     $routes->post('update/(:num)', 'Pedidos::update/$1');
     $routes->post('cambiar-estado/(:num)', 'Pedidos::cambiarEstado/$1');
+    $routes->get('pdf/(:num)', 'Pedidos::pdf/$1');
 });
 
 $routes->group('ventas', ['filter' => 'adminvendedor'], function($routes) {
     $routes->get('/', 'Ventas::index');
     $routes->get('show/(:num)', 'Ventas::show/$1');
+    $routes->get('pdf/(:num)', 'Ventas::pdf/$1');
 });

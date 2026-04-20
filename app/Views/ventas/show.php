@@ -25,7 +25,17 @@
             <h1 class="h3 mb-1">Venta #<?= esc($venta['id']) ?></h1>
             <p class="text-muted mb-0">Detalle completo de la venta</p>
         </div>
-        <a href="<?= base_url('ventas') ?>" class="btn btn-outline-secondary">Volver</a>
+
+        <!-- BOTONES -->
+        <div class="d-flex gap-2">
+            <a href="<?= base_url('ventas') ?>" class="btn btn-outline-secondary">
+                Volver
+            </a>
+
+            <a href="<?= base_url('ventas/pdf/' . $venta['id']) ?>" target="_blank" class="btn btn-danger">
+                PDF
+            </a>
+        </div>
     </div>
 
     <div class="row g-4">
@@ -43,7 +53,21 @@
                     <p class="mb-2"><strong>Fecha venta:</strong> <?= esc($venta['fecha_venta'] ?? '-') ?></p>
                     <p class="mb-2"><strong>Fecha entrega:</strong> <?= esc($venta['fecha_entrega'] ?? '-') ?></p>
                     <p class="mb-2"><strong>Forma de pago:</strong> <?= esc($venta['forma_pago'] ?? '-') ?></p>
-                    <p class="mb-2"><strong>Estado entrega:</strong> <?= esc($venta['estado_entrega'] ?? '-') ?></p>
+
+                    <p class="mb-2">
+                        <strong>Estado entrega:</strong>
+                        <?php
+                            $estado = $venta['estado_entrega'] ?? '';
+                            $badgeClass = match ($estado) {
+                                'entregado' => 'bg-success',
+                                default => 'bg-secondary',
+                            };
+                        ?>
+                        <span class="badge <?= $badgeClass ?>">
+                            <?= esc(ucfirst($estado)) ?>
+                        </span>
+                    </p>
+
                     <p class="mb-2"><strong>Observación:</strong> <?= esc($venta['observacion'] ?? '-') ?></p>
                 </div>
             </div>
